@@ -144,8 +144,7 @@ print_it:
     b loop
 
 .data
-program: .byte 1, 4, 1, 3, 3, 5
-
+program: .byte  1, 42, 4, 5
 .bss
 .align 3
 vm_stack: .space 256
