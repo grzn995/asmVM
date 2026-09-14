@@ -10,10 +10,27 @@ _main:
     adrp x20, program@PAGE
     add x20, x20, program@PAGEOFF
 
+loop:
+    ldrb w0, [x20] // load into w0, one byte from x20
+    add x20, x20, #1 // increment the program counter pointer by one, such that it points to next instruction
+    cmp w0, #1 // val in w0 == 1? 
+    b.eq do_push // if above statement is true, branch to do_push
 
-    mov x0, #0
-    mov x16, #1
-    svc 0x80
+    cmp w0, #5 // w0 == 5?
+    b.eq do_halt //if true branch to do_halt
+
+    b loop //if none of the above match, branch to loop
+    
+
+do_push:
+    ldrb w1, [x20] //load into w1, one byte from x20
+    add x20, x20, #1 // increment program 
+
+    strb w1, [x19] //write the val in w1 into x19
+    add x19, x19 ,#1 //increment stack pointer by one
+
+    b loop
+
 
 .data
 program: .byte 1, 3, 1, 4, 5
