@@ -89,11 +89,11 @@ do_sub:
 do_print:
     //Pop val of the stack
     sub x19,x19,#1
-    ldrb w0,[x19]
+    ldrb w0,[x19] 
 
     //get adress of buffer
     adrp x1, print_buf@PAGE
-    add x1, x1 print_buf@PAGEOFF
+    add x1, x1, print_buf@PAGEOFF
 
     //store the newline character at the last index of buffer
     mov w3,#10
@@ -125,7 +125,23 @@ digit_loop:
 
     b digit_loop
 
+print_it:
+    //x2 always points one position to the left of the first number, make it point to the first number
+    add x9,x2,#1
 
+    //calculate the amount of bytes to print
+    mov x5, #4
+    sub x5, x5,x9
+
+    //Set adress of x1 to point at the first digit
+    add x1,x1,x9
+
+    mov x0,#1 //file descriptor: stdout
+    mov x2,x5 //length expected to be passed into x2, x5 = 4
+    mov x16, #4 //syscall number for write
+    svc #0x80 //triggering syscall
+
+    b loop
 
 .data
 program: .byte 1, 4, 1, 3, 3, 5
