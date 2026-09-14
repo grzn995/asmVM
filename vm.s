@@ -23,9 +23,11 @@ loop:
     cmp w0,#3
     b.eq do_sub
 
+    cmp w0, #4
+    b.eq do_print
+
     cmp w0, #5 // w0 == 5?
     b.eq do_halt //if true branch to do_halt
-
 
     b loop //if none of the above match, branch to loop
     
@@ -50,29 +52,32 @@ do_halt:
 
 
 do_add: 
-    sub x19, x19 , #1
-    ldrb w0, [x19]
+    sub x19, x19 , #1 //move stack pointer back to point at second val
+    ldrb w0, [x19] //read val into w0
 
-    sub x19,x19,#1
-    ldrb w1, [x19]
+    sub x19,x19,#1 //stack pointer -1
+    ldrb w1, [x19] //load val into w1
 
+    //calculate sum into w3,store w3 into current stack pos
     add w3,w1,w0
     strb w3,[x19]
 
-    add x19,x19,#1
+    add x19,x19,#1 // increment stack pointer by 1
 
-    b loop
+    b loop //branch into loop
 
 
 
      
 do_sub: 
+    //Same process as in do_add
     sub x19, x19 , #1
     ldrb w0, [x19]
 
     sub x19,x19,#1
     ldrb w1, [x19]
 
+    //Calculate sum into w3 and store w3 into stack
     sub w3,w1,w0
     strb w3,[x19]
 
@@ -81,6 +86,17 @@ do_sub:
     b loop
     
 
+do_print:
+    sub x19,x19,#1
+    ldrb w0,[x19]
+
+    adrp x1, print_buf@PAGE
+    add x1, x1, print_buf@PAGEOFF
+
+    mov w3,#10
+    strb w3,[x1,#3]
+
+    mov x2,#2
 
 
 .data
@@ -89,3 +105,4 @@ program: .byte 1, 4, 1, 3, 3, 5
 .bss
 .align 3
 vm_stack: .space 256
+print_buf: .space 8
