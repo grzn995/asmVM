@@ -20,6 +20,9 @@ loop:
     cmp w0, #2 //same process as above
     b.eq do_add
 
+    cmp w0,#3
+    b.eq do_sub
+
     cmp w0, #5 // w0 == 5?
     b.eq do_halt //if true branch to do_halt
 
@@ -63,12 +66,25 @@ do_add:
 
 
      
+do_sub: 
+    sub x19, x19 , #1
+    ldrb w0, [x19]
+
+    sub x19,x19,#1
+    ldrb w1, [x19]
+
+    sub w3,w1,w0
+    strb w3,[x19]
+
+    add x19,x19,#1
+
+    b loop
     
 
 
 
 .data
-program: .byte 1, 3, 1, 4, 2, 5
+program: .byte 1, 4, 1, 3, 3, 5
 
 .bss
 .align 3
