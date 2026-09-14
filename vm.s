@@ -32,6 +32,13 @@ do_push:
     b loop
 
 
+do_halt:
+    sub x19, x19, #1 // move stack pointer down such that its pointing at the top elem, not an empty space
+    ldrb w0, [x19] //read byte of x19 into w0
+
+    mov x16, #1 //setup syscall number for exit
+    svc #0x80 //trigger syscall
+
 .data
 program: .byte 1, 3, 1, 4, 5
 
