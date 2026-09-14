@@ -91,12 +91,31 @@ do_print:
     ldrb w0,[x19]
 
     adrp x1, print_buf@PAGE
-    add x1, x1, print_buf@PAGEOFF
+    add x1, x1 print_buf@PAGEOFF
 
     mov w3,#10
     strb w3,[x1,#3]
 
     mov x2,#2
+
+digit_loop:
+    cmp w0, #0
+    b.eq print_it
+
+
+    mov w5, #10
+
+    udiv w6, w0, w5
+    msub w7, w6, w5, w0
+    add w7, w7, #0x30
+
+    strb w7, [x1,x2]
+    sub x2,x2,#1
+
+    mov w0,w6
+
+    b digit_loop
+
 
 
 .data
