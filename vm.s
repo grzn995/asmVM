@@ -29,6 +29,12 @@ loop:
     cmp w0, #5 // w0 == 5?
     b.eq do_halt //if true branch to do_halt
 
+    cmp w0, #6
+    b.eq do_pop
+
+    cmp w0, #7 
+    b.eq do_mul
+
     b loop //if none of the above match, branch to loop
     
 
@@ -143,8 +149,34 @@ print_it:
 
     b loop
 
+
+do_pop:
+    //make stack pointer point to the item we want to pop,
+    //that makes the item pointed at unreachable because every other function effectively works with the item one position behind what the stack pointer is pointing at
+    sub x19, x19 , #1
+    b loop
+
+
+do_mul:
+    //reading in the values
+    sub x19,x19,#1
+    ldrb w0,[x19] 
+
+    sub x19,x19,#1
+    ldrb w1,[x19] 
+
+    //calculate product and store into stack
+    mul w3, w0, w1
+    strb w3,[x19]
+
+    //make stack pointer point one in front the last element
+    add x19, x19, #1
+
+    b loop
+
+
 .data
-program: .byte  1, 42, 4, 5
+program: .byte  1, 6, 1, 7, 1, 99, 6, 7, 4, 5
 .bss
 .align 3
 vm_stack: .space 256
