@@ -9,3 +9,5 @@ Each instruction starts with a 1-byte opcode. Some opcodes take a 1-byte operand
 | SUB  | 0x03 | no  | pop two, push (second - top) |
 | PRINT | 0x04 | no | pop one, print it |
 | HALT | 0x05 | no | stop execution |
+| POP| 0x06 | yes | pops and discards the top of the stack |
+| MUL | 0x06 | no | pops two values and pushes their product |
