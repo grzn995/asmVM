@@ -5,6 +5,7 @@
 _main:
     adrp x19, vm_stack@PAGE
     add x19, x19, vm_stack@PAGEOFF
+    mov x21, x19
 
 
     adrp x20, program@PAGE
@@ -49,13 +50,20 @@ do_push:
 
 
 do_halt:
+    cmp x19, x21
+    b.le halt_zero
     sub x19, x19, #1 // move stack pointer down such that its pointing at the top elem, not an empty space
     ldrb w0, [x19] //read byte of x19 into w0
-
-    mov x16, #1 //setup syscall number for exit
-    svc #0x80 //trigger syscall
+    b do_exit
 
 
+halt_zero:
+    mov w0,#0
+
+
+do_exit:
+    mov x16, #1
+    svc #0x80
 
 do_add: 
     sub x19, x19 , #1 //move stack pointer back to point at second val
@@ -97,10 +105,32 @@ do_print:
     sub x19,x19,#1
     ldrb w0,[x19] 
 
+
     //get adress of buffer
     adrp x1, print_buf@PAGE
     add x1, x1, print_buf@PAGEOFF
 
+    and w8, w0, #0x80
+    cmp w8, #0
+    b.eq positive_print
+
+    mov w11,w0
+
+
+    mov w9, #0x2D
+    strb w9, [x1]
+    mov x0, #1
+    mov x2, #1
+    mov x16, #4
+    svc #0x80
+
+    mov w0,w11
+    mov w10, #256
+    sub w0, w10,w0
+    adrp x1, print_buf@PAGE
+    add x1, x1, print_buf@PAGEOFF
+
+positive_print:
     //store the newline character at the last index of buffer
     mov w3,#10
     strb w3,[x1,#3]
@@ -176,7 +206,7 @@ do_mul:
 
 
 .data
-program: .byte  1, 6, 1, 7, 1, 99, 6, 7, 4, 5
+program: .byte 1, 20, 1, 50, 3, 4, 5   // PUSH 10, PUSH 50, SUB, PRINT, HALT
 .bss
 .align 3
 vm_stack: .space 256
