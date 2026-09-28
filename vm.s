@@ -6,6 +6,8 @@ _main:
     adrp x19, vm_stack@PAGE
     add x19, x19, vm_stack@PAGEOFF
     mov x21, x19
+    adrp x22, program@PAGE
+    add x22, x22, program@PAGEOFF
 
 
     adrp x20, program@PAGE
@@ -35,6 +37,9 @@ loop:
 
     cmp w0, #7 
     b.eq do_mul
+
+    cmp w0, #8 
+    b.eq do_jmp
 
     b loop //if none of the above match, branch to loop
     
@@ -211,9 +216,15 @@ do_mul:
 
     b loop
 
+do_jmp:
+    //read in the operand
+    ldrb w1,[x20]
+    add x20, x22, x1
+    b loop
+
 
 .data
-program: .byte 1, 127, 4, 5
+program: .byte 1, 5, 8, 6, 1, 99, 4, 5
 .bss
 .align 3
 vm_stack: .space 256
