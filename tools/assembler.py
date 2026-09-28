@@ -28,8 +28,26 @@ def loadLines(filename):
 
     return cleaned
 
+def buildLabelTable(lines):
+    labels = {}
+    index = 0
+    for line in lines: 
+        if line.endswith(":"):
+            labelName = line.rstrip(":")
+            labels[labelName] = index
+        else:
+            words = line.split()
+            firstWord = words[0]
+            opcodeNumber, hasOperand = OPCODES[firstWord]
+            if hasOperand:
+                index += 1
+            index += 1
+
+
+    return labels
+
 
 
 if __name__ == "__main__":
-    lines = loadLines("test.asm")
-    print(lines)
+    test_lines = ["PUSH", "loop:", "PUSH", "SUB", "JZ", "JMP", "done:", "PRINT", "HALT"]
+    print(buildLabelTable(test_lines))
