@@ -41,6 +41,9 @@ loop:
     cmp w0, #8 
     b.eq do_jmp
 
+    cmp w0, #9
+    b.eq do_jz
+
     b loop //if none of the above match, branch to loop
     
 
@@ -222,9 +225,19 @@ do_jmp:
     add x20, x22, x1
     b loop
 
+do_jz:
+    ldrb w1, [x20]
+    add x20, x20, #1
+
+    ldrb w0, [x19, #-1]
+    cmp w0, #0
+    b.ne loop
+
+    add x20, x22, x1
+    b loop
 
 .data
-program: .byte 1, 5, 8, 6, 1, 99, 4, 5
+program: .byte 1, 3, 1, 1, 3, 9, 9, 8, 2, 4, 5
 .bss
 .align 3
 vm_stack: .space 256
