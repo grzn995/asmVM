@@ -1,2 +1,6 @@
 vm
 *.o
+test.asm
+.Rhistory
+.DS_Store
+**/.DS_Store
