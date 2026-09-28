@@ -137,6 +137,13 @@ positive_print:
 
     //set x2 to point at the 2 index of buffer
     mov x2,#2
+    cmp w0, #0
+    b.ne digit_loop
+
+    mov w12, #0x30
+    strb w12, [x1,x2]
+    sub x2, x2, #1
+    b print_it
 
 digit_loop:
     //check if value is 0 and if true branch to print_it
@@ -206,7 +213,7 @@ do_mul:
 
 
 .data
-program: .byte 1, 20, 1, 50, 3, 4, 5   // PUSH 10, PUSH 50, SUB, PRINT, HALT
+program: .byte 1, 127, 4, 5
 .bss
 .align 3
 vm_stack: .space 256
