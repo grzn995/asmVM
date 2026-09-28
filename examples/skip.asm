@@ -1,0 +1,6 @@
+PUSH 5
+JMP skip
+PUSH 99
+skip:
+PRINT
+HALT

@@ -1,3 +1,7 @@
+import sys
+
+
+
 OPCODES = {
     "PUSH": (1, True),
     "ADD":  (2, False),
@@ -46,8 +50,37 @@ def buildLabelTable(lines):
 
     return labels
 
+def assemble(labels,lines):
+    bytecode = []
+    for line in lines:
+        if line.endswith(":"):
+            continue
+
+        words = line.split()
+        firstWord = words[0]
+        opcodeNumber, hasOperand = OPCODES[firstWord]
+
+        bytecode.append(opcodeNumber)
+
+        if hasOperand:
+            operand = words[1]
+            if operand.isdigit():
+                bytecode.append(int(operand))
+            else:
+                bytecode.append(labels[operand])
+
+    return bytecode
+
 
 
 if __name__ == "__main__":
-    test_lines = ["PUSH", "loop:", "PUSH", "SUB", "JZ", "JMP", "done:", "PRINT", "HALT"]
-    print(buildLabelTable(test_lines))
+    if len(sys.argv) < 2:
+        print("Usage: python3 tools/assembler.py <path-to-asm-file>")
+        sys.exit(1)
+
+    filename = sys.argv[1]
+    lines = loadLines(filename)
+    labels = buildLabelTable(lines)
+    bytecode = assemble(labels, lines)
+    joined = ", ".join(str(b) for b in bytecode)
+    print(f"program: .byte {joined}")
