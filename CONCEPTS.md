@@ -1,6 +1,6 @@
 # How it works
 
-This explains each mechanism in the VM conceptually, in the order they were built. It assumes you've read DESIGN.md for the opcode table.
+This explains each mechanism in the VM and the assembler conceptually, in the order they were built. It assumes you've read DESIGN.md for the opcode table.
 
 ## The dispatch loop
 
@@ -58,4 +58,17 @@ JMP and JZ take an operand that's an *index* — "byte number N of the program" 
 
 JMP alone can only move execution somewhere and keep going — useful for skipping code, but on its own it can only produce an infinite loop, since nothing ever decides to stop. JZ alone can only skip forward conditionally. A loop that runs a fixed number of times needs both: JZ checks an exit condition each pass and jumps *out* when it's met; JMP unconditionally sends execution *back* to the top of the loop body when the condition isn't met yet.
 
-The countdown-from-3 example in the README shows this: each pass subtracts 1 from a counter and checks (via JZ) whether it reached 0. If not, JMP sends execution back to subtract again. Only when JZ's condition is finally true does execution fall through, print, and halt.
+The countdown-from-3 example (`examples/countdown.asm`) shows this: each pass subtracts 1 from a counter and checks (via JZ) whether it reached 0. If not, JMP sends execution back to subtract again. Only when JZ's condition is finally true does execution fall through, print, and halt.
+
+## Labels and the two-pass assembler
+
+Writing `JMP 2` by hand means counting how many bytes every earlier instruction occupies — tedious, and it breaks the moment a line is added or removed anywhere before it. The assembler (`tools/assembler.py`) exists to remove that counting: it lets you write `JMP loop` instead, where `loop` is just a name attached to a specific line, and figures out the real number itself.
+
+A label is a name that stands for a byte index, nothing more. Writing `loop:` on its own line doesn't produce any bytes — it's a marker saying "remember this position," attached to whatever index the next real instruction ends up at. The VM never sees the word `loop` at all; by the time the assembler is done, every label has been replaced with the plain number it stood for.
+
+This is why the assembler has to make two separate passes over the source rather than one:
+
+- **Pass one** (`build_label_table`) walks the program purely to count. It doesn't care what any instruction *does* — only whether it takes 1 byte or 2 — and every time it passes a label, it records the current count against that label's name. It emits no bytes at all; its only output is a dictionary like `{"loop": 2, "done": 9}`.
+- **Pass two** (`assemble`) walks the same program again, this time actually building the byte list. For every operand, it checks whether the text is a plain number (`"3"`) or a name (`"loop"`); a plain number is converted directly, while a name is looked up in the table pass one already built.
+
+The two passes have to happen in this order and can't be merged into one, because pass two might need to resolve a label (like `JMP loop`, jumping *backward*) that pass one hasn't necessarily counted differently than a *forward* reference (`JZ done`, jumping to a line later in the file it hasn't reached yet). By finishing the counting pass completely before resolving any operand, the assembler never has to guess at a label it hasn't seen yet — every label's final index is already known before pass two even starts.
